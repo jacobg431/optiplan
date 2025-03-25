@@ -1,0 +1,14 @@
+# Dependencies
+node_modules
+
+# Code editor files and directories
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+
+# Production
+/build
+
+# Environment
+.env
