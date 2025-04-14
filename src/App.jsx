@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { jobData } from "../public/job_data";
-import "./styling/App.css";
+import React, { useState, useEffect } from "react"
+import { jobData } from "../public/job_data"
+import "./styling/App.css"
 
 const allowedZones = [
   {
@@ -35,7 +35,7 @@ const allowedZones = [
     height: "88%",
     toggleable: false,
   },
-];
+]
 
 const days = [
   "Monday",
@@ -45,140 +45,140 @@ const days = [
   "Friday",
   "Saturday",
   "Sunday",
-];
-const hoursPerDay = 8;
-const totalBlocks = days.length * hoursPerDay; // now 7 * 8 = 56
+]
+const hoursPerDay = 8
+const totalBlocks = days.length * hoursPerDay // now 7 * 8 = 56
 
 function App() {
-  const [showZone1, setShowZone1] = useState(false);
-  const [expandedJobId, setExpandedJobId] = useState(null);
-  const [showSearchBar, setShowSearchBar] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+  const [showZone1, setShowZone1] = useState(false)
+  const [expandedJobId, setExpandedJobId] = useState(null)
+  const [showSearchBar, setShowSearchBar] = useState(false)
+  const [searchValue, setSearchValue] = useState("")
 
-  const [showHighlightW30, setShowHighlightW30] = useState(false);
-  const [showHighlightU30, setShowHighlightU30] = useState(false);
-  const [showHighlightP70, setShowHighlightP70] = useState(false);
+  const [showHighlightW30, setShowHighlightW30] = useState(false)
+  const [showHighlightU30, setShowHighlightU30] = useState(false)
+  const [showHighlightP70, setShowHighlightP70] = useState(false)
 
   const [zone1Options, setZone1Options] = useState(() => {
-    const stored = localStorage.getItem("zone1Options");
+    const stored = localStorage.getItem("zone1Options")
     return stored
       ? JSON.parse(stored)
-      : { optionA: false, optionB: false, optionC: false };
-  });
+      : { optionA: false, optionB: false, optionC: false }
+  })
 
   const [selectedJobs, setSelectedJobs] = useState(() => {
-    const stored = localStorage.getItem("zone1SelectedJobs");
-    return stored ? JSON.parse(stored) : [];
-  });
+    const stored = localStorage.getItem("zone1SelectedJobs")
+    return stored ? JSON.parse(stored) : []
+  })
 
   useEffect(() => {
-    localStorage.setItem("zone1SelectedJobs", JSON.stringify(selectedJobs));
-  }, [selectedJobs]);
+    localStorage.setItem("zone1SelectedJobs", JSON.stringify(selectedJobs))
+  }, [selectedJobs])
 
   useEffect(() => {
-    localStorage.setItem("zone1Options", JSON.stringify(zone1Options));
-  }, [zone1Options]);
+    localStorage.setItem("zone1Options", JSON.stringify(zone1Options))
+  }, [zone1Options])
 
   useEffect(() => {
     const handleMouseDown = (e) => {
       const clickedInsideJob =
-        e.target.closest(".job-block") || e.target.closest(".job-info-box");
+        e.target.closest(".job-block") || e.target.closest(".job-info-box")
 
       if (!clickedInsideJob) {
-        setExpandedJobId(null);
-        setShowHighlightW30(false);
-        setShowHighlightU30(false);
-        setShowHighlightP70(false);
+        setExpandedJobId(null)
+        setShowHighlightW30(false)
+        setShowHighlightU30(false)
+        setShowHighlightP70(false)
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mousedown", handleMouseDown)
     return () => {
-      document.removeEventListener("mousedown", handleMouseDown);
-    };
-  }, []);
+      document.removeEventListener("mousedown", handleMouseDown)
+    }
+  }, [])
 
   const toggleZone1Option = (key) => {
-    setZone1Options((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
+    setZone1Options((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
 
   const handleToggle = () => {
-    setShowZone1((prev) => !prev);
-  };
+    setShowZone1((prev) => !prev)
+  }
 
   const toBlockIndexFromDate = (isoString) => {
-    const date = new Date(isoString);
-    const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1; // Monday = 0, Sunday = 6
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const timeDecimal = hours - 8 + minutes / 60;
-    return dayIndex * hoursPerDay + timeDecimal;
-  };
+    const date = new Date(isoString)
+    const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1 // Monday = 0, Sunday = 6
+    const hours = date.getHours()
+    const minutes = date.getMinutes()
+    const timeDecimal = hours - 8 + minutes / 60
+    return dayIndex * hoursPerDay + timeDecimal
+  }
 
-  const jobRows = [];
+  const jobRows = []
   jobData.forEach((job) => {
-    const jobStart = toBlockIndexFromDate(job.startDay, job.startTime);
-    const jobEnd = toBlockIndexFromDate(job.endDay, job.endTime);
-    let placed = false;
+    const jobStart = toBlockIndexFromDate(job.startDay, job.startTime)
+    const jobEnd = toBlockIndexFromDate(job.endDay, job.endTime)
+    let placed = false
 
     for (let row = 0; row < jobRows.length; row++) {
-      const rowJobs = jobRows[row];
+      const rowJobs = jobRows[row]
       const overlaps = rowJobs.some((existingJob) => {
         const start = toBlockIndexFromDate(
           existingJob.startDay,
-          existingJob.startTime
-        );
+          existingJob.startTime,
+        )
         const end = toBlockIndexFromDate(
           existingJob.endDay,
-          existingJob.endTime
-        );
-        return !(jobEnd <= start - 0.0001 || jobStart >= end + 0.0001);
-      });
+          existingJob.endTime,
+        )
+        return !(jobEnd <= start - 0.0001 || jobStart >= end + 0.0001)
+      })
       if (!overlaps) {
-        job.row = row;
-        rowJobs.push(job);
-        placed = true;
-        break;
+        job.row = row
+        rowJobs.push(job)
+        placed = true
+        break
       }
     }
 
     if (!placed) {
-      job.row = jobRows.length;
-      jobRows.push([job]);
+      job.row = jobRows.length
+      jobRows.push([job])
     }
-  });
+  })
 
   const getJobStyle = (job) => {
-    const startBlock = toBlockIndexFromDate(job.start);
-    const endBlock = toBlockIndexFromDate(job.end);
-    const totalWidth = 100;
-    const left = (startBlock / totalBlocks) * totalWidth;
-    const width = ((endBlock - startBlock) / totalBlocks) * totalWidth;
-    const ROW_HEIGHT = 2.3;
-    const top = job.row * ROW_HEIGHT;
+    const startBlock = toBlockIndexFromDate(job.start)
+    const endBlock = toBlockIndexFromDate(job.end)
+    const totalWidth = 100
+    const left = (startBlock / totalBlocks) * totalWidth
+    const width = ((endBlock - startBlock) / totalBlocks) * totalWidth
+    const ROW_HEIGHT = 2.3
+    const top = job.row * ROW_HEIGHT
 
     return {
       position: "absolute",
       top: `${top}%`,
       left: `${left}%`,
       width: `${width}%`,
-    };
-  };
+    }
+  }
 
   const getNowMarkerStyle = () => {
-    const now = new Date();
-    const dayIndex = now.getDay(); // 1 = Monday, ..., 5 = Friday
+    const now = new Date()
+    const dayIndex = now.getDay() // 1 = Monday, ..., 5 = Friday
 
-    if (dayIndex < 1 || dayIndex > 5) return null;
+    if (dayIndex < 1 || dayIndex > 5) return null
 
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const timeDecimal = hours - 8 + minutes / 60;
+    const hours = now.getHours()
+    const minutes = now.getMinutes()
+    const timeDecimal = hours - 8 + minutes / 60
 
-    if (timeDecimal < 0 || timeDecimal > 8) return null;
+    if (timeDecimal < 0 || timeDecimal > 8) return null
 
-    const blockIndex = (dayIndex - 1) * hoursPerDay + timeDecimal;
-    const left = (blockIndex / totalBlocks) * 100;
+    const blockIndex = (dayIndex - 1) * hoursPerDay + timeDecimal
+    const left = (blockIndex / totalBlocks) * 100
 
     return {
       position: "absolute",
@@ -188,41 +188,41 @@ function App() {
       width: "1px",
       backgroundColor: "rgba(44, 120, 0, 0.3)",
       zIndex: 100,
-    };
-  };
+    }
+  }
 
   const getCurrentWeekDates = () => {
-    const now = new Date();
-    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, ...
-    const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + mondayOffset);
+    const now = new Date()
+    const currentDay = now.getDay() // 0 = Sunday, 1 = Monday, ...
+    const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay
+    const monday = new Date(now)
+    monday.setDate(now.getDate() + mondayOffset)
 
     return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + i);
+      const date = new Date(monday)
+      date.setDate(monday.getDate() + i)
       return date.toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
-      });
-    });
-  };
+      })
+    })
+  }
 
   const removeSelectedJob = (idToRemove) => {
-    setSelectedJobs((prev) => prev.filter((job) => job.id !== idToRemove));
-  };
+    setSelectedJobs((prev) => prev.filter((job) => job.id !== idToRemove))
+  }
 
   const bestMatch = searchValue
     ? jobData
         .filter((job) =>
-          job.title.toLowerCase().includes(searchValue.toLowerCase())
+          job.title.toLowerCase().includes(searchValue.toLowerCase()),
         )
         .sort(
           (a, b) =>
             a.title.toLowerCase().indexOf(searchValue.toLowerCase()) -
-            b.title.toLowerCase().indexOf(searchValue.toLowerCase())
+            b.title.toLowerCase().indexOf(searchValue.toLowerCase()),
         )[0]
-    : null;
+    : null
 
   return (
     <div className="background-wrapper">
@@ -242,7 +242,7 @@ function App() {
         </button>
 
         {allowedZones.map((zone) => {
-          if (zone.toggleable && !showZone1) return null;
+          if (zone.toggleable && !showZone1) return null
 
           return (
             <div
@@ -322,9 +322,9 @@ function App() {
                         <div
                           className="search-suggestion"
                           onClick={() => {
-                            setSelectedJobs((prev) => [...prev, bestMatch]);
-                            setSearchValue("");
-                            setShowSearchBar(false);
+                            setSelectedJobs((prev) => [...prev, bestMatch])
+                            setSearchValue("")
+                            setShowSearchBar(false)
                           }}
                         >
                           {bestMatch.title}
@@ -363,8 +363,8 @@ function App() {
               {zone.id === "zone2" && (
                 <div className="timeline-wrapper">
                   {jobData.map((job) => {
-                    const jobStyle = getJobStyle(job);
-                    const isExpanded = expandedJobId === job.id;
+                    const jobStyle = getJobStyle(job)
+                    const isExpanded = expandedJobId === job.id
 
                     return (
                       <React.Fragment key={job.id}>
@@ -379,23 +379,23 @@ function App() {
                           }`}
                           style={jobStyle}
                           onClick={(e) => {
-                            e.stopPropagation();
+                            e.stopPropagation()
 
-                            const isSameJob = expandedJobId === job.id;
-                            const hasW30 = job.dependencies.includes("W30");
-                            const hasU30 = job.dependencies.includes("U30");
-                            const hasP70 = job.dependencies.includes("P70");
+                            const isSameJob = expandedJobId === job.id
+                            const hasW30 = job.dependencies.includes("W30")
+                            const hasU30 = job.dependencies.includes("U30")
+                            const hasP70 = job.dependencies.includes("P70")
 
                             if (isSameJob) {
-                              setExpandedJobId(null);
-                              if (hasW30) setShowHighlightW30(false);
-                              if (hasU30) setShowHighlightU30(false);
-                              if (hasP70) setShowHighlightP70(false);
+                              setExpandedJobId(null)
+                              if (hasW30) setShowHighlightW30(false)
+                              if (hasU30) setShowHighlightU30(false)
+                              if (hasP70) setShowHighlightP70(false)
                             } else {
-                              setExpandedJobId(job.id);
-                              setShowHighlightW30(hasW30);
-                              setShowHighlightU30(hasU30);
-                              setShowHighlightP70(hasP70);
+                              setExpandedJobId(job.id)
+                              setShowHighlightW30(hasW30)
+                              setShowHighlightU30(hasU30)
+                              setShowHighlightP70(hasP70)
                             }
                           }}
                         >
@@ -449,16 +449,16 @@ function App() {
                                 </div>
                                 <div className="criticality-boxes">
                                   {[1, 2, 3, 4, 5].map((level) => {
-                                    const filled = job.criticality >= level;
+                                    const filled = job.criticality >= level
                                     const colorClass = filled
                                       ? `crit-${level}`
-                                      : "";
+                                      : ""
                                     return (
                                       <div
                                         key={level}
                                         className={`criticality-box ${colorClass}`}
                                       />
-                                    );
+                                    )
                                   })}
                                 </div>
                               </div>
@@ -466,7 +466,7 @@ function App() {
                           </div>
                         )}
                       </React.Fragment>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -477,11 +477,11 @@ function App() {
                 </div>
               )}
             </div>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
