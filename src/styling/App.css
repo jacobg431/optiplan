@@ -22,14 +22,13 @@ html,
     position: relative;
     width: 90vw;
     aspect-ratio: 16 / 9;
-    background-image: url("/LivePlan_18.png");
+    background-image: url('/LivePlan_18.png');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
 }
 
-/* OPTIPLAN button */
-.optiplan-button {
+.reschedule-button {
     position: absolute;
     top: 0.75%;
     left: 13.45%;
@@ -52,7 +51,7 @@ html,
     transition: background-color 0.2s ease;
 }
 
-.optiplan-button:hover {
+.reschedule-button:hover {
     background-color: #505050;
     color: #e0e0e0;
     outline: none;
@@ -60,7 +59,7 @@ html,
     user-select: none;
 }
 
-.optiplan-button:focus {
+.reschedule-button:focus {
     outline: none;
     border: none;
     user-select: none;
@@ -96,8 +95,8 @@ html,
 
 .optimize-button {
     position: absolute;
-    bottom: 8%;
-    right: 5%;
+    bottom: 87%;
+    right: 1.2%;
     background-color: #4d613e; /* Pale green */
     color: #c0c0c0;
     font-size: 0.7vw;
@@ -148,11 +147,7 @@ html,
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    background: linear-gradient(
-        to bottom,
-        #3a3a3a,
-        #2a2a2a
-    ); /* gray gradient */
+    background: linear-gradient(to bottom, #3a3a3a, #2a2a2a); /* gray gradient */
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
@@ -201,7 +196,7 @@ html,
     font-size: 0.55vw;
     width: 10vw; /* Fixed width */
     height: auto;
-    min-height: 3vw; /* Optional for height consistency */
+    min-height: 3vw;
     z-index: 5;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
@@ -217,7 +212,7 @@ html,
 }
 
 .job-dependencies ul {
-    padding-left: 1em; /* reduce from default (~2em) */
+    padding-left: 1em;
     margin: 0.2em 0 0 0;
 }
 
@@ -246,7 +241,7 @@ html,
     color: #ccc;
 }
 
-.parts-check input[type="checkbox"] {
+.parts-check input[type='checkbox'] {
     width: 0.8vw;
     height: 0.8vw;
     accent-color: #888;
@@ -304,14 +299,14 @@ html,
 
 .static-highlight-box {
     position: absolute;
-    top: 24.5%; /* ← adjust as needed */
-    left: 15.1%; /* ← adjust as needed */
-    width: 4.4%; /* ← adjust as needed */
-    height: 3.1%; /* ← adjust as needed */
+    top: 24.5%;
+    left: 15.1%;
+    width: 4.4%;
+    height: 3.1%;
     border: 0.07vw solid rgb(171, 171, 171);
     box-sizing: border-box;
-    z-index: 20; /* make sure it’s above the background but under the now-line if needed */
-    pointer-events: none; /* ensure it doesn't block any interaction */
+    z-index: 20;
+    pointer-events: none;
 }
 
 .zone1-selector {
@@ -339,7 +334,7 @@ html,
     box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
 }
 
-.zone1-selector input[type="checkbox"] {
+.zone1-selector input[type='checkbox'] {
     width: 1vw;
     height: 1vw;
     accent-color: #999;
@@ -357,7 +352,7 @@ html,
     gap: 0.4vw; /* spacing between the two blocks */
 }
 
-.zone1-empty-box {
+.zone1-urgent-jobs {
     background-color: #303030;
     padding: 0.8em;
     margin-top: 2.5vw;
@@ -399,7 +394,7 @@ html,
     border-radius: 4px;
     background-color: #1e1e1e;
     color: #fff;
-    box-sizing: border-box; /* ✅ ensures width accounts for padding */
+    box-sizing: border-box;
     outline: none;
 }
 
@@ -431,8 +426,12 @@ html,
     color: #ccc;
 }
 
+.parameter-style {
+    background-color: #5a4a43; /* Brown tone */
+  }  
+
 .remove-job {
-    visibility: hidden; /* 👈 keeps space, just hides visually */
+    visibility: hidden;
     margin-left: 0.5em;
     cursor: pointer;
     color: #999;
@@ -461,7 +460,7 @@ html,
     background-color: #555;
 }
 
-.zone1-empty-third {
+.zone1-parameters {
     background-color: #303030;
     padding: 0.8em;
     margin-top: 2.5vw;
@@ -474,6 +473,39 @@ html,
     min-height: 8vh;
     box-sizing: border-box;
     position: relative;
+}
+
+.parameter-dropdown-row {
+    display: flex;
+    margin-top: 0.3em;
+    border: 1px solid #555;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+
+.dropdown-select {
+    padding: 0.3em;
+    font-size: 0.55vw;
+    background-color: #1e1e1e;
+    color: #fff;
+    border: none;
+    outline: none;
+    appearance: none;
+    width: 100%;
+}
+
+.parameter-add-button {
+    background-color: #444;
+    color: white;
+    border: none;
+    padding: 0 0.6em;
+    font-size: 1vw;
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    justify-content: right;
+    user-select: none;
 }
 
 .static-highlight-box {

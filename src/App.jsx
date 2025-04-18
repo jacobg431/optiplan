@@ -1,89 +1,96 @@
-import React, { useState, useEffect } from "react"
-import { jobData } from "../public/job_data"
-import "./styling/App.css"
+import React, { useState, useEffect } from 'react'
+import { jobData } from '../public/job_data'
+import './styling/App.css'
+import JobBlock from './JobBlock'
 
 const allowedZones = [
     {
-        id: "zone1",
-        top: "74%",
-        left: "0%",
-        width: "32.89%",
-        height: "26%",
+        id: 'zone1',
+        top: '74%',
+        left: '0%',
+        width: '32.89%',
+        height: '26%',
         toggleable: true,
     },
     {
-        id: "zone2",
-        top: "17%",
-        left: "33.03%",
-        width: "66.97%",
-        height: "83%",
+        id: 'zone2',
+        top: '17%',
+        left: '33.03%',
+        width: '66.97%',
+        height: '83%',
         toggleable: false,
     },
     {
-        id: "zone3",
-        top: "12%",
-        left: "33.03%",
-        width: "66.97%",
-        height: "5%",
+        id: 'zone3',
+        top: '12%',
+        left: '33.03%',
+        width: '66.97%',
+        height: '5%',
         toggleable: false,
     },
     {
-        id: "zone4",
-        top: "12%",
-        left: "33.03%",
-        width: "66.97%",
-        height: "88%",
+        id: 'zone4',
+        top: '12%',
+        left: '33.03%',
+        width: '66.97%',
+        height: '88%',
         toggleable: false,
     },
 ]
 
-const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-]
+const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const hoursPerDay = 8
 const totalBlocks = days.length * hoursPerDay // now 7 * 8 = 56
 
 function App() {
-    const [showZone1, setShowZone1] = useState(false)
+    const [showZone1, setShowZone1] = useState(() => {
+        const stored = localStorage.getItem('zone1Visible')
+        return stored ? JSON.parse(stored) : true
+      })
+      
     const [expandedJobId, setExpandedJobId] = useState(null)
     const [showSearchBar, setShowSearchBar] = useState(false)
-    const [searchValue, setSearchValue] = useState("")
+    const [searchValue, setSearchValue] = useState('')
 
     const [showHighlightW30, setShowHighlightW30] = useState(false)
     const [showHighlightU30, setShowHighlightU30] = useState(false)
     const [showHighlightP70, setShowHighlightP70] = useState(false)
 
+    const [selectedParameter, setSelectedParameter] = useState('')
+    const [parameterList, setParameterList] = useState(() => {
+        const stored = localStorage.getItem('zone1ParameterList')
+        return stored ? JSON.parse(stored) : []
+      })      
+
     const [zone1Options, setZone1Options] = useState(() => {
-        const stored = localStorage.getItem("zone1Options")
-        return stored
-            ? JSON.parse(stored)
-            : { optionA: false, optionB: false, optionC: false }
+        const stored = localStorage.getItem('zone1Options')
+        return stored ? JSON.parse(stored) : { optionA: false, optionB: false, optionC: false }
     })
 
     const [selectedJobs, setSelectedJobs] = useState(() => {
-        const stored = localStorage.getItem("zone1SelectedJobs")
+        const stored = localStorage.getItem('zone1SelectedJobs')
         return stored ? JSON.parse(stored) : []
     })
 
     useEffect(() => {
-        localStorage.setItem("zone1SelectedJobs", JSON.stringify(selectedJobs))
+        localStorage.setItem('zone1Visible', JSON.stringify(showZone1))
+      }, [showZone1])      
+
+    useEffect(() => {
+        localStorage.setItem('zone1SelectedJobs', JSON.stringify(selectedJobs))
     }, [selectedJobs])
 
     useEffect(() => {
-        localStorage.setItem("zone1Options", JSON.stringify(zone1Options))
+        localStorage.setItem('zone1Options', JSON.stringify(zone1Options))
     }, [zone1Options])
 
     useEffect(() => {
+        localStorage.setItem('zone1ParameterList', JSON.stringify(parameterList))
+      }, [parameterList])      
+
+    useEffect(() => {
         const handleMouseDown = (e) => {
-            const clickedInsideJob =
-                e.target.closest(".job-block") ||
-                e.target.closest(".job-info-box")
+            const clickedInsideJob = e.target.closest('.job-block') || e.target.closest('.job-info-box')
 
             if (!clickedInsideJob) {
                 setExpandedJobId(null)
@@ -93,9 +100,9 @@ function App() {
             }
         }
 
-        document.addEventListener("mousedown", handleMouseDown)
+        document.addEventListener('mousedown', handleMouseDown)
         return () => {
-            document.removeEventListener("mousedown", handleMouseDown)
+            document.removeEventListener('mousedown', handleMouseDown)
         }
     }, [])
 
@@ -125,14 +132,8 @@ function App() {
         for (let row = 0; row < jobRows.length; row++) {
             const rowJobs = jobRows[row]
             const overlaps = rowJobs.some((existingJob) => {
-                const start = toBlockIndexFromDate(
-                    existingJob.startDay,
-                    existingJob.startTime,
-                )
-                const end = toBlockIndexFromDate(
-                    existingJob.endDay,
-                    existingJob.endTime,
-                )
+                const start = toBlockIndexFromDate(existingJob.startDay, existingJob.startTime)
+                const end = toBlockIndexFromDate(existingJob.endDay, existingJob.endTime)
                 return !(jobEnd <= start - 0.0001 || jobStart >= end + 0.0001)
             })
             if (!overlaps) {
@@ -159,7 +160,7 @@ function App() {
         const top = job.row * ROW_HEIGHT
 
         return {
-            position: "absolute",
+            position: 'absolute',
             top: `${top}%`,
             left: `${left}%`,
             width: `${width}%`,
@@ -182,12 +183,12 @@ function App() {
         const left = (blockIndex / totalBlocks) * 100
 
         return {
-            position: "absolute",
+            position: 'absolute',
             top: 0,
             bottom: 0,
             left: `${left}%`,
-            width: "1px",
-            backgroundColor: "rgba(44, 120, 0, 0.3)",
+            width: '1px',
+            backgroundColor: 'rgba(44, 120, 0, 0.3)',
             zIndex: 100,
         }
     }
@@ -203,8 +204,8 @@ function App() {
             const date = new Date(monday)
             date.setDate(monday.getDate() + i)
             return date.toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
+                month: 'short',
+                day: 'numeric',
             })
         })
     }
@@ -215,9 +216,7 @@ function App() {
 
     const bestMatch = searchValue
         ? jobData
-              .filter((job) =>
-                  job.title.toLowerCase().includes(searchValue.toLowerCase()),
-              )
+              .filter((job) => job.title.toLowerCase().includes(searchValue.toLowerCase()))
               .sort(
                   (a, b) =>
                       a.title.toLowerCase().indexOf(searchValue.toLowerCase()) -
@@ -228,17 +227,11 @@ function App() {
     return (
         <div className="background-wrapper">
             <div className="responsive-background">
-                {showHighlightW30 && (
-                    <div className="static-highlight-box highlight-w30"></div>
-                )}
-                {showHighlightU30 && (
-                    <div className="static-highlight-box highlight-u30"></div>
-                )}
-                {showHighlightP70 && (
-                    <div className="static-highlight-box highlight-p70"></div>
-                )}
+                {showHighlightW30 && <div className="static-highlight-box highlight-w30"></div>}
+                {showHighlightU30 && <div className="static-highlight-box highlight-u30"></div>}
+                {showHighlightP70 && <div className="static-highlight-box highlight-p70"></div>}
 
-                <button className="optiplan-button" onClick={handleToggle}>
+                <button className="reschedule-button" onClick={handleToggle}>
                     RESCHEDULE
                 </button>
 
@@ -256,112 +249,73 @@ function App() {
                                 height: zone.height,
                             }}
                         >
-                            {zone.id === "zone3" && (
+                            {zone.id === 'zone3' && (
                                 <div className="timeline-days">
                                     {days.map((day, index) => (
                                         <div key={day} className="day-column">
-                                            <div className="day-label">
-                                                {day}
-                                            </div>
-                                            <div className="day-date">
-                                                {getCurrentWeekDates()[index]}
-                                            </div>
+                                            <div className="day-label">{day}</div>
+                                            <div className="day-date">{getCurrentWeekDates()[index]}</div>
                                         </div>
                                     ))}
                                 </div>
                             )}
 
-                            {zone.id === "zone1" && (
+                            {zone.id === 'zone1' && (
                                 <>
                                     <div className="zone-banner">
-                                        <span className="zone-banner-title">
-                                            OPTIMIZATION
-                                        </span>
+                                        <span className="zone-banner-title">OPTIMIZATION</span>
                                     </div>
-                                    <div className="optimize-button">
-                                        OPTIMIZE
-                                    </div>
+                                    <div className="optimize-button">OPTIMIZE</div>
                                     <div className="zone1-row">
                                         {/* Left block: Prioritation */}
                                         <div>
                                             <div className="zone1-selector">
-                                                <div className="zone1-label">
-                                                    PRIORITATION
-                                                </div>
+                                                <div className="zone1-label">PRIORITATION</div>
                                                 <div className="zone1-option">
                                                     <span>COST</span>
                                                     <input
                                                         type="checkbox"
-                                                        checked={
-                                                            zone1Options.optionA
-                                                        }
-                                                        onChange={() =>
-                                                            toggleZone1Option(
-                                                                "optionA",
-                                                            )
-                                                        }
+                                                        checked={zone1Options.optionA}
+                                                        onChange={() => toggleZone1Option('optionA')}
                                                     />
                                                 </div>
                                                 <div className="zone1-option">
                                                     <span>TIME</span>
                                                     <input
                                                         type="checkbox"
-                                                        checked={
-                                                            zone1Options.optionB
-                                                        }
-                                                        onChange={() =>
-                                                            toggleZone1Option(
-                                                                "optionB",
-                                                            )
-                                                        }
+                                                        checked={zone1Options.optionB}
+                                                        onChange={() => toggleZone1Option('optionB')}
                                                     />
                                                 </div>
                                                 <div className="zone1-option">
                                                     <span>WORKLOAD</span>
                                                     <input
                                                         type="checkbox"
-                                                        checked={
-                                                            zone1Options.optionC
-                                                        }
-                                                        onChange={() =>
-                                                            toggleZone1Option(
-                                                                "optionC",
-                                                            )
-                                                        }
+                                                        checked={zone1Options.optionC}
+                                                        onChange={() => toggleZone1Option('optionC')}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Right block: Empty elevated box */}
-                                        <div className="zone1-empty-box">
-                                            <div className="zone1-label">
-                                                URGENT
-                                            </div>
+                                        <div className="zone1-urgent-jobs">
+                                            <div className="zone1-label">URGENT</div>
                                             {showSearchBar && (
                                                 <input
                                                     type="text"
                                                     className="zone1-search-bar"
                                                     placeholder="Search jobs..."
                                                     value={searchValue}
-                                                    onChange={(e) =>
-                                                        setSearchValue(
-                                                            e.target.value,
-                                                        )
-                                                    }
+                                                    onChange={(e) => setSearchValue(e.target.value)}
                                                 />
                                             )}
                                             {showSearchBar && bestMatch && (
                                                 <div
                                                     className="search-suggestion"
                                                     onClick={() => {
-                                                        setSelectedJobs(
-                                                            (prev) => [
-                                                                ...prev,
-                                                                bestMatch,
-                                                            ],
-                                                        )
-                                                        setSearchValue("")
+                                                        setSelectedJobs((prev) => [...prev, bestMatch])
+                                                        setSearchValue('')
                                                         setShowSearchBar(false)
                                                     }}
                                                 >
@@ -372,16 +326,10 @@ function App() {
                                                 <div className="selected-jobs-list">
                                                     {selectedJobs.map((job) => (
                                                         <div className="selected-job-title">
-                                                            <span>
-                                                                {job.title}
-                                                            </span>
+                                                            <span>{job.title}</span>
                                                             <span
                                                                 className="remove-job"
-                                                                onClick={() =>
-                                                                    removeSelectedJob(
-                                                                        job.id,
-                                                                    )
-                                                                }
+                                                                onClick={() => removeSelectedJob(job.id)}
                                                             >
                                                                 ×
                                                             </span>
@@ -392,217 +340,105 @@ function App() {
 
                                             <button
                                                 className="zone1-add-button"
-                                                onClick={() =>
-                                                    setShowSearchBar(
-                                                        (prev) => !prev,
-                                                    )
-                                                }
+                                                onClick={() => setShowSearchBar((prev) => !prev)}
                                             >
                                                 +
                                             </button>
                                         </div>
-                                        <div className="zone1-empty-third">
-                                            <div className="zone1-label">
-                                                PARAMETERS
+                                        <div className="zone1-parameters">
+                                            <div className="zone1-label">PARAMETERS</div>
+                                            <div className="parameter-dropdown">
+                                                <div className="parameter-dropdown-row">
+                                                    <select
+                                                        id="param-select"
+                                                        className="dropdown-select"
+                                                        value={selectedParameter}
+                                                        onChange={(e) => setSelectedParameter(e.target.value)}
+                                                    >
+                                                        <option value="">-- Choose an option --</option>
+                                                        <option value="Temperature">Temperature</option>
+                                                        <option value="Pressure">Pressure</option>
+                                                        <option value="Vibration">Vibration</option>
+                                                    </select>
+
+                                                    <button
+                                                        className="parameter-add-button"
+                                                        onClick={() => {
+                                                            if (
+                                                                selectedParameter &&
+                                                                !parameterList.includes(selectedParameter)
+                                                            ) {
+                                                                setParameterList((prev) => [...prev, selectedParameter])
+                                                            }
+                                                        }}
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+
+                                                {parameterList.length > 0 && (
+                                                    <div className="selected-jobs-list">
+                                                        {parameterList.map((param, index) => (
+                                                            <div key={index} className="selected-job-title parameter-style">
+                                                                <span>{param}</span>
+                                                                <span
+                                                                    className="remove-job"
+                                                                    onClick={() =>
+                                                                        setParameterList((prev) =>
+                                                                            prev.filter((p) => p !== param),
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    ×
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
                                 </>
                             )}
 
-                            {zone.id === "zone2" && (
+                            {zone.id === 'zone2' && (
                                 <div className="timeline-wrapper">
                                     {jobData.map((job) => {
                                         const jobStyle = getJobStyle(job)
-                                        const isExpanded =
-                                            expandedJobId === job.id
+                                        const isExpanded = expandedJobId === job.id
 
                                         return (
-                                            <React.Fragment key={job.id}>
-                                                <div
-                                                    className={`job-block ${
-                                                        expandedJobId !==
-                                                            null &&
-                                                        jobData
-                                                            .find(
-                                                                (j) =>
-                                                                    j.id ===
-                                                                    expandedJobId,
-                                                            )
-                                                            ?.connectedTo?.includes(
-                                                                job.id,
-                                                            )
-                                                            ? "connected-job"
-                                                            : ""
-                                                    }`}
-                                                    style={jobStyle}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
+                                            <JobBlock
+                                                key={job.id}
+                                                job={job}
+                                                jobStyle={jobStyle}
+                                                isExpanded={isExpanded}
+                                                expandedJobId={expandedJobId}
+                                                toggleJob={(clickedJob) => {
+                                                    const isSameJob = expandedJobId === clickedJob.id
+                                                    const hasW30 = clickedJob.dependencies.includes('W30')
+                                                    const hasU30 = clickedJob.dependencies.includes('U30')
+                                                    const hasP70 = clickedJob.dependencies.includes('P70')
 
-                                                        const isSameJob =
-                                                            expandedJobId ===
-                                                            job.id
-                                                        const hasW30 =
-                                                            job.dependencies.includes(
-                                                                "W30",
-                                                            )
-                                                        const hasU30 =
-                                                            job.dependencies.includes(
-                                                                "U30",
-                                                            )
-                                                        const hasP70 =
-                                                            job.dependencies.includes(
-                                                                "P70",
-                                                            )
-
-                                                        if (isSameJob) {
-                                                            setExpandedJobId(
-                                                                null,
-                                                            )
-                                                            if (hasW30)
-                                                                setShowHighlightW30(
-                                                                    false,
-                                                                )
-                                                            if (hasU30)
-                                                                setShowHighlightU30(
-                                                                    false,
-                                                                )
-                                                            if (hasP70)
-                                                                setShowHighlightP70(
-                                                                    false,
-                                                                )
-                                                        } else {
-                                                            setExpandedJobId(
-                                                                job.id,
-                                                            )
-                                                            setShowHighlightW30(
-                                                                hasW30,
-                                                            )
-                                                            setShowHighlightU30(
-                                                                hasU30,
-                                                            )
-                                                            setShowHighlightP70(
-                                                                hasP70,
-                                                            )
-                                                        }
-                                                    }}
-                                                >
-                                                    {job.title}
-                                                </div>
-                                                {isExpanded && (
-                                                    <div
-                                                        className="job-info-box"
-                                                        style={{
-                                                            top: `calc(${jobStyle.top} + 2.4%)`,
-                                                            left: `calc(${jobStyle.left})`,
-                                                        }}
-                                                    >
-                                                        <div>
-                                                            <strong>
-                                                                {job.title}
-                                                            </strong>
-                                                        </div>
-                                                        <div>
-                                                            {" "}
-                                                            {new Date(
-                                                                job.start,
-                                                            ).toLocaleString()}{" "}
-                                                            →{" "}
-                                                            {new Date(
-                                                                job.end,
-                                                            ).toLocaleString()}{" "}
-                                                        </div>
-
-                                                        {job.dependencies &&
-                                                            job.dependencies
-                                                                .length > 0 && (
-                                                                <div className="job-dependencies">
-                                                                    <div className="dep-title">
-                                                                        Dependencies:
-                                                                    </div>
-                                                                    <ul>
-                                                                        {job.dependencies.map(
-                                                                            (
-                                                                                dep,
-                                                                                idx,
-                                                                            ) => (
-                                                                                <li
-                                                                                    key={
-                                                                                        idx
-                                                                                    }
-                                                                                >
-                                                                                    {
-                                                                                        dep
-                                                                                    }
-                                                                                </li>
-                                                                            ),
-                                                                        )}
-                                                                    </ul>
-                                                                </div>
-                                                            )}
-
-                                                        {job.partsAvailable !==
-                                                            undefined && (
-                                                            <div className="parts-check-container">
-                                                                <div className="parts-check">
-                                                                    <span>
-                                                                        Parts
-                                                                        available
-                                                                    </span>
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={
-                                                                            job.partsAvailable ===
-                                                                            1
-                                                                        }
-                                                                        readOnly
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        {job.criticality !==
-                                                            undefined && (
-                                                            <div className="criticality-container">
-                                                                <div className="criticality-label">
-                                                                    Criticality
-                                                                </div>
-                                                                <div className="criticality-boxes">
-                                                                    {[
-                                                                        1, 2, 3,
-                                                                        4, 5,
-                                                                    ].map(
-                                                                        (
-                                                                            level,
-                                                                        ) => {
-                                                                            const filled =
-                                                                                job.criticality >=
-                                                                                level
-                                                                            const colorClass =
-                                                                                filled
-                                                                                    ? `crit-${level}`
-                                                                                    : ""
-                                                                            return (
-                                                                                <div
-                                                                                    key={
-                                                                                        level
-                                                                                    }
-                                                                                    className={`criticality-box ${colorClass}`}
-                                                                                />
-                                                                            )
-                                                                        },
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </React.Fragment>
+                                                    if (isSameJob) {
+                                                        setExpandedJobId(null)
+                                                        if (hasW30) setShowHighlightW30(false)
+                                                        if (hasU30) setShowHighlightU30(false)
+                                                        if (hasP70) setShowHighlightP70(false)
+                                                    } else {
+                                                        setExpandedJobId(clickedJob.id)
+                                                        setShowHighlightW30(hasW30)
+                                                        setShowHighlightU30(hasU30)
+                                                        setShowHighlightP70(hasP70)
+                                                    }
+                                                }}
+                                            />
                                         )
                                     })}
                                 </div>
                             )}
 
-                            {zone.id === "zone4" && (
+                            {zone.id === 'zone4' && (
                                 <div className="now-line-wrapper">
                                     <div style={getNowMarkerStyle()} />
                                 </div>
