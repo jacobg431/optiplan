@@ -269,7 +269,7 @@ function App() {
                                     <div className="zone1-row">
                                         {/* Left block: Prioritation */}
                                         <div>
-                                            <div className="zone1-selector">
+                                            <div className="zone1-prioritation">
                                                 <div className="zone1-label">PRIORITATION</div>
                                                 <div className="zone1-option">
                                                     <span>COST</span>
