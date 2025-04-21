@@ -46,8 +46,8 @@ function App() {
     const [showZone1, setShowZone1] = useState(() => {
         const stored = localStorage.getItem('zone1Visible')
         return stored ? JSON.parse(stored) : true
-      })
-      
+    })
+
     const [expandedJobId, setExpandedJobId] = useState(null)
     const [showSearchBar, setShowSearchBar] = useState(false)
     const [searchValue, setSearchValue] = useState('')
@@ -60,7 +60,7 @@ function App() {
     const [parameterList, setParameterList] = useState(() => {
         const stored = localStorage.getItem('zone1ParameterList')
         return stored ? JSON.parse(stored) : []
-      })      
+    })
 
     const [zone1Options, setZone1Options] = useState(() => {
         const stored = localStorage.getItem('zone1Options')
@@ -74,7 +74,7 @@ function App() {
 
     useEffect(() => {
         localStorage.setItem('zone1Visible', JSON.stringify(showZone1))
-      }, [showZone1])      
+    }, [showZone1])
 
     useEffect(() => {
         localStorage.setItem('zone1SelectedJobs', JSON.stringify(selectedJobs))
@@ -86,7 +86,7 @@ function App() {
 
     useEffect(() => {
         localStorage.setItem('zone1ParameterList', JSON.stringify(parameterList))
-      }, [parameterList])      
+    }, [parameterList])
 
     useEffect(() => {
         const handleMouseDown = (e) => {
@@ -355,7 +355,7 @@ function App() {
                                                         value={selectedParameter}
                                                         onChange={(e) => setSelectedParameter(e.target.value)}
                                                     >
-                                                        <option value="">-- Choose an option --</option>
+                                                        <option value="">Choose a parameter</option>
                                                         <option value="Temperature">Temperature</option>
                                                         <option value="Pressure">Pressure</option>
                                                         <option value="Vibration">Vibration</option>
@@ -379,7 +379,10 @@ function App() {
                                                 {parameterList.length > 0 && (
                                                     <div className="selected-jobs-list">
                                                         {parameterList.map((param, index) => (
-                                                            <div key={index} className="selected-job-title parameter-style">
+                                                            <div
+                                                                key={index}
+                                                                className="selected-job-title parameter-style"
+                                                            >
                                                                 <span>{param}</span>
                                                                 <span
                                                                     className="remove-job"
