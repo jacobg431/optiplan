@@ -428,7 +428,7 @@ html,
 
 .parameter-style {
     background-color: #5a4a43; /* Brown tone */
-  }  
+}
 
 .remove-job {
     visibility: hidden;
@@ -481,8 +481,7 @@ html,
     border: 1px solid #555;
     border-radius: 4px;
     overflow: hidden;
-  }
-  
+}
 
 .dropdown-select {
     padding: 0.3em;
