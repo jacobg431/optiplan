@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { jobData } from '../public/job_data'
+// import { jobData } from '../public/job_data'
 import './styling/App.css'
 import JobBlock from './JobBlock'
 
@@ -43,6 +43,84 @@ const hoursPerDay = 8
 const totalBlocks = days.length * hoursPerDay // now 7 * 8 = 56
 
 function App() {
+    const [jobData, setJobData] = useState([])
+
+    useEffect(() => {
+        const fetchJobs = async () => {
+            try {
+                const [workOrdersRes, dependenciesRes, wotdRes] = await Promise.all([
+                    fetch('https://localhost:5051/api/WorkOrders'),
+                    fetch('https://localhost:5051/api/Dependencies'),
+                    fetch('https://localhost:5051/api/WorkOrdersToDependencies'),
+                ])
+
+                const [workOrders, dependencies, wotds] = await Promise.all([
+                    workOrdersRes.json(),
+                    dependenciesRes.json(),
+                    wotdRes.json(),
+                ])
+
+                const jobs = workOrders.map((wo) => {
+                    const wotdForWO = wotds.filter((d) => d.workOrderId === wo.id)
+
+                    let dependencyNames = []
+                    let criticality = 1
+                    let partsAvailable = 0
+
+                    wotdForWO.forEach((depInstance) => {
+                        const depInfo = dependencies.find((d) => d.id === depInstance.dependencyId)
+                        if (!depInfo) return
+
+                        // 🎯 Add to display list only if there's actual data assigned
+                        const hasMeaningfulValue =
+                            depInstance.textAttributeValue !== null ||
+                            depInstance.integerAttributeValue !== null ||
+                            depInstance.numberAttributeValue !== null ||
+                            depInstance.booleanAttributeValue !== null
+
+                        if (depInfo.id === 9 && typeof depInstance.integerAttributeValue === 'number') {
+                            criticality = depInstance.integerAttributeValue
+                        }
+
+                        if (depInfo.id === 6 && depInstance.booleanAttributeValue === 1) {
+                            partsAvailable = 1
+                        }
+
+                        // Avoid showing ID 6 or 9 in the display list — they're handled separately
+                        const isDisplayed = hasMeaningfulValue && depInfo.id !== 6 && depInfo.id !== 9
+
+                        const excludedDependencyNames = ['Other work orders', 'Calculatory Costs']
+
+                        if (isDisplayed && !excludedDependencyNames.includes(depInfo.name)) {
+                            const label = depInstance.textAttributeValue
+                                ? `${depInfo.name}: ${depInstance.textAttributeValue}`
+                                : depInfo.name
+
+                            dependencyNames.push(label)
+                        }
+                    })
+
+                    return {
+                        id: wo.id,
+                        title: wo.name,
+                        start: wo.startDateTime,
+                        end: wo.stopDateTime,
+                        dependencies: dependencyNames,
+                        connectedTo: [],
+                        partsAvailable,
+                        criticality,
+                    }
+                })
+
+                setJobData(jobs)
+            } catch (error) {
+                console.error('Failed to fetch job data:', error)
+            }
+        }
+
+        fetchJobs()
+    }, [])
+
     const [showZone1, setShowZone1] = useState(() => {
         const stored = localStorage.getItem('zone1Visible')
         return stored ? JSON.parse(stored) : true
