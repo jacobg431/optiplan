@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-// import { jobData } from '../public/job_data'
 import './styling/App.css'
 import JobBlock from './JobBlock'
 
@@ -63,42 +62,55 @@ function App() {
                 const jobs = workOrders.map((wo) => {
                     const wotdForWO = wotds.filter((d) => d.workOrderId === wo.id)
 
-                    let dependencyNames = []
                     let criticality = 1
                     let partsAvailable = 0
+                    let connectedTo = []
+                    const excludedDependencyNames = ['Other work orders', 'Calculatory Costs']
+                    let dependencyMap = {} // name → list of values
 
                     wotdForWO.forEach((depInstance) => {
                         const depInfo = dependencies.find((d) => d.id === depInstance.dependencyId)
                         if (!depInfo) return
 
-                        // 🎯 Add to display list only if there's actual data assigned
-                        const hasMeaningfulValue =
-                            depInstance.textAttributeValue !== null ||
-                            depInstance.integerAttributeValue !== null ||
-                            depInstance.numberAttributeValue !== null ||
-                            depInstance.booleanAttributeValue !== null
-
+                        // Criticality (ID 9)
                         if (depInfo.id === 9 && typeof depInstance.integerAttributeValue === 'number') {
                             criticality = depInstance.integerAttributeValue
                         }
 
+                        // Parts Available (ID 6)
                         if (depInfo.id === 6 && depInstance.booleanAttributeValue === 1) {
                             partsAvailable = 1
                         }
 
-                        // Avoid showing ID 6 or 9 in the display list — they're handled separately
-                        const isDisplayed = hasMeaningfulValue && depInfo.id !== 6 && depInfo.id !== 9
+                        // Connected Jobs (ID 1)
+                        if (depInfo.id === 1 && typeof depInstance.integerAttributeValue === 'number') {
+                            connectedTo.push(depInstance.integerAttributeValue)
+                        }
 
-                        const excludedDependencyNames = ['Other work orders', 'Calculatory Costs']
+                        // Skip special logic dependencies
+                        if ([1, 6, 9].includes(depInfo.id) || excludedDependencyNames.includes(depInfo.name)) return
 
-                        if (isDisplayed && !excludedDependencyNames.includes(depInfo.name)) {
-                            const label = depInstance.textAttributeValue
-                                ? `${depInfo.name}: ${depInstance.textAttributeValue}`
-                                : depInfo.name
+                        const labelValue =
+                            depInstance.textAttributeValue ??
+                            depInstance.integerAttributeValue ??
+                            depInstance.numberAttributeValue ??
+                            (typeof depInstance.booleanAttributeValue === 'number'
+                                ? depInstance.booleanAttributeValue
+                                    ? 'Yes'
+                                    : 'No'
+                                : '')
 
-                            dependencyNames.push(label)
+                        if (labelValue !== '') {
+                            if (!dependencyMap[depInfo.name]) {
+                                dependencyMap[depInfo.name] = []
+                            }
+                            dependencyMap[depInfo.name].push(labelValue)
                         }
                     })
+
+                    const dependencyNames = Object.entries(dependencyMap).map(
+                        ([name, values]) => `${name}: ${values.join(', ')}`,
+                    )
 
                     return {
                         id: wo.id,
@@ -106,7 +118,7 @@ function App() {
                         start: wo.startDateTime,
                         end: wo.stopDateTime,
                         dependencies: dependencyNames,
-                        connectedTo: [],
+                        connectedTo,
                         partsAvailable,
                         criticality,
                     }
