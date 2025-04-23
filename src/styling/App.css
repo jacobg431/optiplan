@@ -198,7 +198,7 @@ html,
     width: 13vw; /* Fixed width */
     height: auto;
     min-height: 3vw;
-    z-index: 5;
+    z-index: 150;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
