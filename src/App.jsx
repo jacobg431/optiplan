@@ -66,7 +66,8 @@ function App() {
                     let partsAvailable = 0
                     let connectedTo = []
                     const excludedDependencyNames = ['Other work orders', 'Calculatory Costs']
-                    let dependencyMap = {} // name → list of values
+                    let dependencyMap = {}
+                    let dependencyFlags = []
 
                     wotdForWO.forEach((depInstance) => {
                         const depInfo = dependencies.find((d) => d.id === depInstance.dependencyId)
@@ -105,6 +106,9 @@ function App() {
                                 dependencyMap[depInfo.name] = []
                             }
                             dependencyMap[depInfo.name].push(labelValue)
+
+                            // Push to dependencyFlags for logic-only use (e.g., "W30", "U30")
+                            dependencyFlags.push(labelValue)
                         }
                     })
 
@@ -117,7 +121,8 @@ function App() {
                         title: wo.name,
                         start: wo.startDateTime,
                         end: wo.stopDateTime,
-                        dependencies: dependencyNames,
+                        dependencies: dependencyNames, // For display
+                        dependencyFlags, // For logic (e.g., .includes("W30"))
                         connectedTo,
                         partsAvailable,
                         criticality,
@@ -133,7 +138,7 @@ function App() {
         fetchJobs()
     }, [])
 
-    const [showZone1, setShowZone1] = useState(() => {
+    const [showZone1] = useState(() => {
         const stored = localStorage.getItem('zone1Visible')
         return stored ? JSON.parse(stored) : true
     })
@@ -145,6 +150,15 @@ function App() {
     const [showHighlightW30, setShowHighlightW30] = useState(false)
     const [showHighlightU30, setShowHighlightU30] = useState(false)
     const [showHighlightP70, setShowHighlightP70] = useState(false)
+
+    const [optimizeMode, setOptimizeMode] = useState(() => {
+        const stored = localStorage.getItem('optimizeMode')
+        return stored ? JSON.parse(stored) : false
+    })
+
+    useEffect(() => {
+        localStorage.setItem('optimizeMode', JSON.stringify(optimizeMode))
+    }, [optimizeMode])
 
     const [selectedParameter, setSelectedParameter] = useState('')
     const [parameterList, setParameterList] = useState(() => {
@@ -198,10 +212,6 @@ function App() {
 
     const toggleZone1Option = (key) => {
         setZone1Options((prev) => ({ ...prev, [key]: !prev[key] }))
-    }
-
-    const handleToggle = () => {
-        setShowZone1((prev) => !prev)
     }
 
     const toBlockIndexFromDate = (isoString) => {
@@ -321,9 +331,20 @@ function App() {
                 {showHighlightU30 && <div className="static-highlight-box highlight-u30"></div>}
                 {showHighlightP70 && <div className="static-highlight-box highlight-p70"></div>}
 
-                <button className="reschedule-button" onClick={handleToggle}>
-                    RESCHEDULE
-                </button>
+                {!optimizeMode ? (
+                    <button className="reschedule-button" onClick={() => setOptimizeMode(true)}>
+                        RESCHEDULE
+                    </button>
+                ) : (
+                    <div className="reschedule-split-button">
+                        <div className="reschedule-half confirm" onClick={() => console.log('Confirm clicked')}>
+                            CONFIRM
+                        </div>
+                        <div className="reschedule-half cancel" onClick={() => setOptimizeMode(false)}>
+                            CANCEL
+                        </div>
+                    </div>
+                )}
 
                 {allowedZones.map((zone) => {
                     if (zone.toggleable && !showZone1) return null
@@ -350,14 +371,19 @@ function App() {
                                 </div>
                             )}
 
-                            {zone.id === 'zone1' && (
+                            {zone.id === 'zone1' && optimizeMode && (
                                 <>
                                     <div className="zone-banner">
                                         <span className="zone-banner-title">OPTIMIZATION</span>
+                                        {optimizeMode && (
+                                            <span className="zone-close-button" onClick={() => setOptimizeMode(false)}>
+                                                ×
+                                            </span>
+                                        )}
                                     </div>
+
                                     <div className="optimize-button">OPTIMIZE</div>
                                     <div className="zone1-row">
-                                        {/* Left block: Prioritation */}
                                         <div>
                                             <div className="zone1-prioritation">
                                                 <div className="zone1-label">PRIORITATION</div>
@@ -509,9 +535,9 @@ function App() {
                                                 expandedJobId={expandedJobId}
                                                 toggleJob={(clickedJob) => {
                                                     const isSameJob = expandedJobId === clickedJob.id
-                                                    const hasW30 = clickedJob.dependencies.includes('W30')
-                                                    const hasU30 = clickedJob.dependencies.includes('U30')
-                                                    const hasP70 = clickedJob.dependencies.includes('P70')
+                                                    const hasW30 = clickedJob.dependencyFlags?.includes('W30')
+                                                    const hasU30 = clickedJob.dependencyFlags?.includes('U30')
+                                                    const hasP70 = clickedJob.dependencyFlags?.includes('P70')
 
                                                     if (isSameJob) {
                                                         setExpandedJobId(null)

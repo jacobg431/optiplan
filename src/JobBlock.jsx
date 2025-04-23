@@ -6,7 +6,9 @@ export default function JobBlock({ job, jobStyle, isExpanded, expandedJobId, tog
     return (
         <>
             <div
-                className={`job-block ${isConnected ? 'connected-job' : ''}`}
+                className={`job-block 
+                    ${isConnected ? 'connected-job' : ''} 
+                    ${isExpanded ? 'selected-job' : ''}`}
                 style={jobStyle}
                 onClick={(e) => {
                     e.stopPropagation()
@@ -31,14 +33,16 @@ export default function JobBlock({ job, jobStyle, isExpanded, expandedJobId, tog
                         {new Date(job.start).toLocaleString()} → {new Date(job.end).toLocaleString()}
                     </div>
 
-                    {job.dependencies?.length > 0 && (
-                        <div className="job-dependencies">
-                            <div className="dep-title">Dependencies:</div>
-                            <ul>
-                                {job.dependencies.map((dep, idx) => (
-                                    <li key={idx}>{dep}</li>
-                                ))}
-                            </ul>
+                    {job.dependencies && job.dependencies.length > 0 && (
+                        <div className="job-dependencies-container">
+                            <div className="job-dependencies">
+                                <div className="dep-title">Dependencies</div>
+                                <ul>
+                                    {job.dependencies.map((dep, idx) => (
+                                        <li key={idx}>{dep}</li>
+                                    ))}
+                                </ul>
+                            </div>
                         </div>
                     )}
 
