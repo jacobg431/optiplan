@@ -142,8 +142,8 @@ html,
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
-    overflow: hidden; 
-    text-overflow: ellipsis; 
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .timeline-days {
