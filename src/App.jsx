@@ -455,7 +455,7 @@ function App() {
                                                     />
                                                 </div>
                                                 <div className="zone1-option">
-                                                    <span>TIME</span>
+                                                    <span>PARTS</span>
                                                     <input
                                                         type="checkbox"
                                                         checked={zone1Options.optionB}
@@ -463,7 +463,7 @@ function App() {
                                                     />
                                                 </div>
                                                 <div className="zone1-option">
-                                                    <span>WORKLOAD</span>
+                                                    <span>SAFETY</span>
                                                     <input
                                                         type="checkbox"
                                                         checked={zone1Options.optionC}
