@@ -38,8 +38,6 @@ const allowedZones = [
 ]
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const hoursPerDay = 8
-const totalBlocks = days.length * hoursPerDay // now 7 * 8 = 56
 
 function App() {
     const [jobData, setJobData] = useState([])
@@ -130,11 +128,13 @@ function App() {
                 })
 
                 setJobData(jobs)
+                setJobData(jobs)
+                setOriginalJobs(jobs) // save the original set
+                setWorkOrderToDependencies(wotds) // store full WOTDs to send to backend
             } catch (error) {
                 console.error('Failed to fetch job data:', error)
             }
         }
-
         fetchJobs()
     }, [])
 
@@ -150,6 +150,9 @@ function App() {
     const [showHighlightW30, setShowHighlightW30] = useState(false)
     const [showHighlightU30, setShowHighlightU30] = useState(false)
     const [showHighlightP70, setShowHighlightP70] = useState(false)
+
+    const [originalJobs, setOriginalJobs] = useState([])
+    const [workOrderToDependencies, setWorkOrderToDependencies] = useState([])
 
     const [optimizeMode, setOptimizeMode] = useState(() => {
         const stored = localStorage.getItem('optimizeMode')
@@ -216,11 +219,37 @@ function App() {
 
     const toBlockIndexFromDate = (isoString) => {
         const date = new Date(isoString)
-        const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1 // Monday = 0, Sunday = 6
+        const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1 // Monday = 0
+
         const hours = date.getHours()
         const minutes = date.getMinutes()
-        const timeDecimal = hours - 8 + minutes / 60
-        return dayIndex * hoursPerDay + timeDecimal
+        const timeDecimal = hours + minutes / 60
+
+        return dayIndex * 24 + timeDecimal
+    }
+
+    const handleOptimizeConfirm = async () => {
+        try {
+            const response = await fetch('https://localhost:5051/api/Optimization/parts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    accept: 'text/plain',
+                },
+                body: JSON.stringify(workOrderToDependencies),
+            })
+
+            const updatedWorkOrders = await response.json()
+
+            const updatedJobs = originalJobs.map((job) => {
+                const updated = updatedWorkOrders.find((u) => u.id === job.id)
+                return updated ? { ...job, start: updated.startDateTime, end: updated.stopDateTime } : job
+            })
+
+            setJobData(updatedJobs)
+        } catch (error) {
+            console.error('Failed to optimize schedule:', error)
+        }
     }
 
     const jobRows = []
@@ -251,46 +280,68 @@ function App() {
     })
 
     const getJobStyle = (job) => {
-        const startBlock = toBlockIndexFromDate(job.start)
-        const endBlock = toBlockIndexFromDate(job.end)
-        const totalWidth = 100
-        const left = (startBlock / totalBlocks) * totalWidth
-        const width = ((endBlock - startBlock) / totalBlocks) * totalWidth
+        const jobStart = new Date(job.start)
+        const jobEnd = new Date(job.end)
+
+        const { startOfWeek, endOfWeek } = getCurrentWeekRange()
+
+        const clippedStart = jobStart < startOfWeek ? startOfWeek : jobStart
+        const clippedEnd = jobEnd > endOfWeek ? endOfWeek : jobEnd
+
+        const totalMinutesInWeek = 7 * 24 * 60
+        const startMinutes = (clippedStart - startOfWeek) / 60000
+        const endMinutes = (clippedEnd - startOfWeek) / 60000
+
+        const leftPercent = (startMinutes / totalMinutesInWeek) * 100
+        const widthPercent = ((endMinutes - startMinutes) / totalMinutesInWeek) * 100
+
         const ROW_HEIGHT = 2.3
         const top = job.row * ROW_HEIGHT
 
         return {
             position: 'absolute',
             top: `${top}%`,
-            left: `${left}%`,
-            width: `${width}%`,
+            left: `${leftPercent}%`,
+            width: `${widthPercent}%`,
         }
     }
 
     const getNowMarkerStyle = () => {
         const now = new Date()
-        const dayIndex = now.getDay() // 1 = Monday, ..., 5 = Friday
+        const { startOfWeek, endOfWeek } = getCurrentWeekRange()
 
-        if (dayIndex < 1 || dayIndex > 5) return null
+        if (now < startOfWeek || now >= endOfWeek) return null // outside this week's scope
 
-        const hours = now.getHours()
-        const minutes = now.getMinutes()
-        const timeDecimal = hours - 8 + minutes / 60
+        const totalMinutesInWeek = 7 * 24 * 60
+        const minutesSinceStart = (now - startOfWeek) / 60000
 
-        if (timeDecimal < 0 || timeDecimal > 8) return null
-
-        const blockIndex = (dayIndex - 1) * hoursPerDay + timeDecimal
-        const left = (blockIndex / totalBlocks) * 100
+        const leftPercent = (minutesSinceStart / totalMinutesInWeek) * 100
 
         return {
             position: 'absolute',
             top: 0,
             bottom: 0,
-            left: `${left}%`,
+            left: `${leftPercent}%`,
             width: '1px',
             backgroundColor: 'rgba(44, 120, 0, 0.3)',
             zIndex: 100,
+            pointerEvents: 'none',
         }
+    }
+
+    const getCurrentWeekRange = () => {
+        const now = new Date()
+        const day = now.getDay()
+        const mondayOffset = day === 0 ? -6 : 1 - day
+        const startOfWeek = new Date(now)
+        startOfWeek.setDate(now.getDate() + mondayOffset)
+        startOfWeek.setHours(0, 0, 0, 0)
+
+        const endOfWeek = new Date(startOfWeek)
+        endOfWeek.setDate(startOfWeek.getDate() + 7)
+        endOfWeek.setHours(0, 0, 0, 0)
+
+        return { startOfWeek, endOfWeek }
     }
 
     const getCurrentWeekDates = () => {
@@ -340,7 +391,13 @@ function App() {
                         <div className="reschedule-half confirm" onClick={() => console.log('Confirm clicked')}>
                             CONFIRM
                         </div>
-                        <div className="reschedule-half cancel" onClick={() => setOptimizeMode(false)}>
+                        <div
+                            className="reschedule-half cancel"
+                            onClick={() => {
+                                setJobData(originalJobs)
+                                setOptimizeMode(false)
+                            }}
+                        >
                             CANCEL
                         </div>
                     </div>
@@ -382,7 +439,9 @@ function App() {
                                         )}
                                     </div>
 
-                                    <div className="optimize-button">OPTIMIZE</div>
+                                    <div className="optimize-button" onClick={handleOptimizeConfirm}>
+                                        OPTIMIZE
+                                    </div>
                                     <div className="zone1-row">
                                         <div>
                                             <div className="zone1-prioritation">
@@ -396,7 +455,7 @@ function App() {
                                                     />
                                                 </div>
                                                 <div className="zone1-option">
-                                                    <span>TIME</span>
+                                                    <span>PARTS</span>
                                                     <input
                                                         type="checkbox"
                                                         checked={zone1Options.optionB}
@@ -404,7 +463,7 @@ function App() {
                                                     />
                                                 </div>
                                                 <div className="zone1-option">
-                                                    <span>WORKLOAD</span>
+                                                    <span>SAFETY</span>
                                                     <input
                                                         type="checkbox"
                                                         checked={zone1Options.optionC}
@@ -522,44 +581,53 @@ function App() {
 
                             {zone.id === 'zone2' && (
                                 <div className="timeline-wrapper">
-                                    {jobData.map((job) => {
-                                        const jobStyle = getJobStyle(job)
-                                        const isExpanded = expandedJobId === job.id
+                                    {(() => {
+                                        const { startOfWeek, endOfWeek } = getCurrentWeekRange()
+                                        const visibleJobs = jobData.filter((job) => {
+                                            const start = new Date(job.start)
+                                            const end = new Date(job.end)
+                                            return end >= startOfWeek && start <= endOfWeek
+                                        })
 
-                                        return (
-                                            <JobBlock
-                                                key={job.id}
-                                                job={job}
-                                                jobStyle={jobStyle}
-                                                isExpanded={isExpanded}
-                                                expandedJobId={expandedJobId}
-                                                toggleJob={(clickedJob) => {
-                                                    const isSameJob = expandedJobId === clickedJob.id
-                                                    const hasW30 = clickedJob.dependencyFlags?.includes('W30')
-                                                    const hasU30 = clickedJob.dependencyFlags?.includes('U30')
-                                                    const hasP70 = clickedJob.dependencyFlags?.includes('P70')
+                                        return visibleJobs.map((job) => {
+                                            const jobStyle = getJobStyle(job)
+                                            const isExpanded = expandedJobId === job.id
 
-                                                    if (isSameJob) {
-                                                        setExpandedJobId(null)
-                                                        if (hasW30) setShowHighlightW30(false)
-                                                        if (hasU30) setShowHighlightU30(false)
-                                                        if (hasP70) setShowHighlightP70(false)
-                                                    } else {
-                                                        setExpandedJobId(clickedJob.id)
-                                                        setShowHighlightW30(hasW30)
-                                                        setShowHighlightU30(hasU30)
-                                                        setShowHighlightP70(hasP70)
-                                                    }
-                                                }}
-                                            />
-                                        )
-                                    })}
+                                            return (
+                                                <JobBlock
+                                                    key={job.id}
+                                                    job={job}
+                                                    jobStyle={jobStyle}
+                                                    isExpanded={isExpanded}
+                                                    expandedJobId={expandedJobId}
+                                                    toggleJob={(clickedJob) => {
+                                                        const isSameJob = expandedJobId === clickedJob.id
+                                                        const hasW30 = clickedJob.dependencyFlags?.includes('W30')
+                                                        const hasU30 = clickedJob.dependencyFlags?.includes('U30')
+                                                        const hasP70 = clickedJob.dependencyFlags?.includes('P70')
+
+                                                        if (isSameJob) {
+                                                            setExpandedJobId(null)
+                                                            if (hasW30) setShowHighlightW30(false)
+                                                            if (hasU30) setShowHighlightU30(false)
+                                                            if (hasP70) setShowHighlightP70(false)
+                                                        } else {
+                                                            setExpandedJobId(clickedJob.id)
+                                                            setShowHighlightW30(hasW30)
+                                                            setShowHighlightU30(hasU30)
+                                                            setShowHighlightP70(hasP70)
+                                                        }
+                                                    }}
+                                                />
+                                            )
+                                        })
+                                    })()}
                                 </div>
                             )}
 
                             {zone.id === 'zone4' && (
                                 <div className="now-line-wrapper">
-                                    <div style={getNowMarkerStyle()} />
+                                    {getNowMarkerStyle() && <div style={getNowMarkerStyle()} />}
                                 </div>
                             )}
                         </div>
