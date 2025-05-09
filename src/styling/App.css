@@ -136,7 +136,6 @@ html,
     text-align: left;
     display: flex;
     align-items: center;
-    padding-left: 0.5vw;
     overflow: hidden;
     z-index: 2;
     cursor: pointer;
@@ -144,6 +143,9 @@ html,
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    position: absolute;
+    max-width: 100%;
+    text-indent: 0.5vw;
 }
 
 .timeline-days {
