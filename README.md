@@ -1,12 +1,38 @@
-# React + Vite
+# Project Setup and Run Instructions
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project includes platform-specific scripts to automate the setup and development server startup. Please follow the appropriate instructions for your operating system.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Before running the project, make sure the following are installed on your system:
 
-## Expanding the ESLint configuration
+- [Node.js (LTS version)](https://nodejs.org/)
+- [npm](https://www.npmjs.com/) (usually comes with Node.js)
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Running on macOS or Linux
+
+Use the provided `run.sh` Bash script:
+
+### Steps
+
+1. Open your **Terminal**.
+2. Navigate to the project directory where `run.sh` is located.
+3. Run the script:
+   ```bash
+   ./run.sh
+## Running on Windows
+
+Use the provided PowerShell script: `run.ps1`.
+
+### Steps
+
+1. Open **PowerShell** (preferably as Administrator).
+2. Navigate to the project directory where `run.ps1` is located:
+3. Run this command first to make sure script execution is allowed:
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+4. Lastly, run this PowerShell script.
+    ```powershell
+   cd path\to\your\project
