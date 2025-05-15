@@ -1,6 +1,6 @@
 # Project Setup and Run Instructions
 
-This project includes platform-specific scripts to automate the setup and development server startup. Please follow the appropriate instructions for your operating system.
+This project includes platform-specific scripts to automate the project setup. Please follow the appropriate instructions for your operating system.
 
 ## Prerequisites
 
@@ -20,10 +20,8 @@ Use the provided `run.sh` Bash script:
 1. Open your **Terminal**.
 2. Navigate to the project directory where `run.sh` is located.
 3. Run the script:
-    ```bash
-    ./run.sh
-    ```
-
+   ```bash
+   bash ./run.sh
 ## Running on Windows
 
 Use the provided PowerShell script: `run.ps1`.
@@ -33,10 +31,8 @@ Use the provided PowerShell script: `run.ps1`.
 1. Open **PowerShell** (preferably as Administrator).
 2. Navigate to the project directory where `run.ps1` is located:
 3. Run this command first to make sure script execution is allowed:
-    ```powershell
-    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-    ```
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 4. Lastly, run this PowerShell script.
     ```powershell
-    cd path\to\your\project
-    ```
+   .\run.ps1
