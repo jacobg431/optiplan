@@ -3,26 +3,15 @@
 # Exit on any error
 set -e
 
-echo "Installing NVM (Node Version Manager)..."
-export NVM_DIR="$HOME/.nvm"
+echo "Checking for Node.js..."
 
-if [ ! -d "$NVM_DIR" ]; then
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-  # Load nvm immediately
-  export NVM_DIR="$HOME/.nvm"
-  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-else
-  echo "NVM already installed."
-  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+if ! command -v node >/dev/null 2>&1; then
+  echo "Error: Node.js is not installed. Please install Node.js (LTS version) before running this script."
+  exit 1
 fi
 
-echo "Installing Node.js LTS..."
-nvm install --lts
-
-echo "Node version:"
-node -v
-echo "NPM version:"
-npm -v
+echo "Node version: $(node -v)"
+echo "NPM version: $(npm -v)"
 
 echo "Installing project dependencies..."
 npm install
